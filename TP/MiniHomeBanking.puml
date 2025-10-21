@@ -1,0 +1,124 @@
+@startuml
+title Mini Home Banking System - Class Diagram (with Abstract User)
+
+' =====================
+' ENUMERATIONS
+' =====================
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+' =====================
+' ABSTRACT CLASSES
+' =====================
+abstract class User {
+  - String username
+  - String firstName
+  - String lastName
+  - Date birthDate // S/implementar, para el final
+  - int nationalId
+  - String email
+  - String address
+  - String password
+  
+  + abstract boolean authenticate(String username, String password)
+}
+
+abstract class BankProduct {
+  - int id
+  - double balance
+  - User owner
+  - List<Transaction> transactions
+
+  + void credit(double amount, String description)
+  + void debit(double amount, String description)
+  + double getBalance()
+}
+
+' =====================
+' CLASSES
+' =====================
+class Customer extends User {
+  - Date registrationtDate // S/implementar, para el final
+  - List<Account> accounts
+  - List<Card> cards
+
+  + void transfer(Account from, Account to, double amount)
+  + List<Account> getAccounts()
+}
+
+class Employee extends User {
+  - Date hireDate    
+    
+  + void createUser(String firstName, String lastName, String username, String password)
+  + void createAccount(Customer customer, Account account)
+  + void registerCardCharge(Card card, double amount, String description)
+}
+
+class Account extends BankProduct {
+  - String type
+  - String cbu
+  - String alias
+
+  + void transferTo(Account destination, double amount)
+  + List<Transaction> getTransactions()
+}
+
+class Card extends BankProduct {
+  - String number
+  - double limit
+
+  + void registerCharge(double amount, String description)
+  + double calculateAmountDue()
+}
+
+class Transaction {
+  - int id
+  - Date date
+  - double amount
+  - String description
+  - TransactionType type
+  - BankProduct product
+
+  + String summary()
+}
+
+class Transfer {
+  - int id
+  - Account origin
+  - Account destination
+  - double amount
+  - Date date
+
+  + void execute()
+}
+
+class Audit {
+  - int id
+  - Date date
+  - User user
+  - String action
+
+  + static void log(User user, String action)
+}
+
+' =====================
+' RELATIONSHIPS
+' =====================
+User <|-- Customer
+User <|-- Employee
+
+BankProduct <|-- Account
+BankProduct <|-- Card
+
+Customer "1" -- "many" Account : owns >
+Customer "1" -- "many" Card : owns >
+BankProduct "1" -- "many" Transaction : records >
+
+Transfer "1" --> Account : origin >
+Transfer "1" --> Account : destination >
+
+Audit "many" --> User : logs actions of >
+
+@enduml
